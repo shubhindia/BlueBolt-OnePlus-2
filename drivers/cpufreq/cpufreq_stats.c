@@ -18,7 +18,7 @@
 #include <linux/slab.h>
 #include <linux/sort.h>
 #include <linux/sched.h>
-#include <asm/cputime.h>
+#include <linux/cputime.h>
 #include <linux/hashtable.h>
 #include <linux/proc_fs.h>
 #include <linux/profile.h>
