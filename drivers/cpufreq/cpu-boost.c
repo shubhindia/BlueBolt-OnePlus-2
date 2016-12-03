@@ -85,8 +85,12 @@ static u64 last_input_time;
 =======
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 static unsigned int cnt_nr_running;
 >>>>>>> 441cc3723dc... cpufreq: cpu-boost: don't boost big cluster on input touch
+=======
+static unsigned int big_nr_running;
+>>>>>>> ace59fd2fc1... drivers: cpu-boost: cosmetic changes
 =======
 static unsigned int big_nr_running;
 >>>>>>> ace59fd2fc1... drivers: cpu-boost: cosmetic changes
@@ -179,6 +183,7 @@ static int boost_adjust_notify(struct notifier_block *nb, unsigned long val,
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 		pr_debug("CPU%u policy min before boost: %u kHz\n",
 			 cpu, policy->min);
 		pr_debug("CPU%u boost min: %u kHz\n", cpu, min);
@@ -191,6 +196,9 @@ static int boost_adjust_notify(struct notifier_block *nb, unsigned long val,
 
 =======
 		if (cpu == 4 && min > 0 && cnt_nr_running == 0)
+=======
+		if (cpu == 4 && min > 0 && big_nr_running == 0)
+>>>>>>> ace59fd2fc1... drivers: cpu-boost: cosmetic changes
 =======
 		if (cpu == 4 && min > 0 && big_nr_running == 0)
 >>>>>>> ace59fd2fc1... drivers: cpu-boost: cosmetic changes
