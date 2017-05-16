@@ -1,0 +1,118 @@
+====================
+     01-Jun-2017
+====================
+073ddb5c7a3  Small fix-up for commit 4bc7635
+5d5677c86d7  msm: qpnp-haptic: Disable haptics for voice calls and video recordings
+3158689fc0a  proc: Remove verifiedbootstate flag from /proc/cmdline
+4bc7635b8cc  sound: qdsp6v2: adjust fragment sizes
+73ade40bd1d  qpnp-charger: 1500 mA usb
+1f4ece39572  ring-buffer: Have ring_buffer_iter_empty() return true when empty
+45bd247798f  cpufreq: show cpu voltages via sysfs
+3118f2be3d3  Bluetooth: Fix user channel for 32bit userspace on 64bit kernel
+70c04ea7dab  md linear: fix a race between linear_add() and linear_congested()
+5c7620d9cac  usb-gadget: support USB keyboard
+61a8ac7b771  kgsl_pwrctrl: Ensure default behaviour is without GPU underclocking
+8026e2c9762  devfreq: Expose GPU used frequency statistics in a new sysfs (condensed version)
+702e0ba9b47  Overclocked more
+bf643333206  Corrected stupid mistake
+d1b298d3cd9  Remove '+' symbol from kernel version string
+00e58a278c8  For Beta v3
+e285f01befe  Revert "Configured Makefile and updated gitignore accordingly"
+75ce56eb3c1  Added blocking wakelocks
+96401f48049  ondemand: add support for saving tunables per policy governor instance
+eec139e1d81  tcp_output: set initial TCP window size to 64K (speed improvement)
+75d4dab4d87  Enabled Impulse governor
+91fd3c2912f  cpufreq: Introduce new relation for freq selection
+02125e0a38d  Configured Makefile and updated gitignore accordingly
+5a6163f8ced  fs/namei.c: fix potential memory leak in path_lookupat
+a5108f6ce9f  sched/fair: Stop searching for tasks in newidle balance if there are runnable tasks
+5d44b77bc11  sched/fair: Implement fast idling of CPUs when the system is partially loaded
+2aaa3a86df3  cpuidle: don't disable cpuidle when entering suspend
+06c4af5dcf5  msm: sps: fix kernel panic
+4687900fba9  Fix memory leaks when sensor probe fails
+6ac359b95fc  Fixed Memory leak while updating stats
+d6cc6d6becc  Add a new Changelog generator
+13b81b112e2  Reverted the commit a2ecf25
+cf4261ea994  Revert "Added Changelog Generator"
+c8ec6ec67f0  tracepoints: Do not trace when cpu is offline
+b36958c62ec  qcom: msm8994: a53/a57: overclocking
+8b2787c1bff  msm_performance: Make input boosting optional
+cbd17008541  Disable crc check for 30% extra performance in IO
+f987012966a  Added fsync on/off support.
+882e4c2ae4e  cpufreq: add an helper to get/set cpu utilization to be used by mako_hotplug
+0a2355bf88a  Enabling Adreno IDLER
+
+====================
+     31-May-2017
+====================
+4f924be26e6  Port Adreno IDLER Correctly
+ce8d0214069  Add PowerSuspend v1.5 Driver[SQUASHED]
+5b5025dae70  Added and Enabled Darkness Governor
+e303fc30825  Add LCD_NOTIFY
+f1d44bb9499  tick: don't update idle time if cpu offline
+cdb9f2df710  arm64: lib: memory utilities optimization
+836c7361527  Enabled MSM Hotplug
+990e18b1013  Added Bricked Hotplug driver
+d87fef35b22  mm: ksm: Optimize defaults
+55325ea9157  Added SIO and FIOPS IO schedulers
+6b403276677  Enabled and Added KCAL
+d7836b6dcee  Complete implementation of Alucard
+9e3bef3f874  Add Alucard Hotplug By Alucard24
+f5ecc1f0b7a  drivers: power: Fix 2% battery level drop
+2202d69dcbc  Underclock
+a4b43c5eb80  GPU: governor_simpleondemand tweaked to not peak up when using 27 MHz min frequency
+9254864a7e6  GPU: governor_msm_adreno_tz tweaked to not peak up when using 27 MHz min frequency
+4853af0a676  msm8994-v2: Activate additional 27 MHz gpu frequency step (idle freq)
+5cc8872d69b  Enable arch power
+bca36c73e17  fs: default to noatime
+d0dd76aa3ce  msm: performance: prevent userspace hints to decrease max cpu freq
+1d2ee799d38  msm: performance: prevent the driver from handling userspace min freq cpu boost hints. We'll use the standard cpu-boost input-boost functionality which gives users freedom to choose their own settings
+a33cfeda92e  cpufreq: cpu-boost: don't boost if input_boost_ms is <= 0
+776669bf7f4  drivers: cpu-boost: cosmetic changes
+f62a9d44dd8  drivers: cpu-boost: cosmetic changes
+dfd1882221e  cpufreq: cpu-boost: boost the input boost notifier to max prio
+a08545e5b3c  cpufreq: cpu-boost: don't boost over user set max freq
+4fa15f3e045  cpufreq: cpu-boost: export input_boost_enable to userspace
+20e59a3ec63  cpufreq: cpu-boost: don't boost big cluster on input touch unless it has at least 1 task running on any of its cores to save power
+b88a2d915e1  cpufreq: interactive: remove hispeed_freq init restriction
+5acbfaea516  slimbus: use interruptible wait to not affect load average
+68ddcadd028  qcom: msm-core: uninterruptible wait - you can kiss my arse goodbye
+3777410406c  qcom: mpm: use interruptible wait to reduce load avg
+03df7818ba2  misc: fpc1020: Ignore home key presses when touchscreen is in use
+dd3751eb4ea  input: synaptics: s1302: Stop keypad when touchscreen is in use
+c74d9c6e4a1  Added Governors Tripndroid and Dynamic Interactive
+56dc1cddcbf  Added Governors Tripndroid and Dynamic Interactive
+d666c196d61  Removed unused profile header file
+a2fdd0c3372  Added beta version in defconfig
+8d1cae3cae4  Reverted commit 90ee94d
+b512130904a  Linux 3.10.105
+c142067afcb  Linux 3.10.104 (Squashed) Special thanks to Pranay Narang @The_Darkbeast (on telegram) @The-Darkbeast
+a2ecf25fee1  Added Changelog Generator
+72f16c5b514  dm cache: add block sizes and total cache blocks to status output
+0fe21910930  Complete implementation of ZZMOOVE and ElementalX
+90ee94d1233  Makefile: set arch,remove REAL_CC & python wrapper and add some compilation flags
+9c950a5eefa  lib/string: Patch - Effecient implementation of memcpy and memmove
+
+====================
+     30-May-2017
+====================
+6532f824d40  Add and enable Fingerprint boost
+66708f5dcd3  Merge commit '448f3c7ebd9b1ced8ef0d2da6fa41b809ae95e81' of https://github.com/ShreyanshLodha/android_kernel_oneplus_msm8994 into cm-14.1
+66b50e5d13e  Enabled Fast charge and other small changes
+448f3c7ebd9  Enabled Fast charge and other small changes
+
+====================
+     29-May-2017
+====================
+b605ec51885  Pending Change
+0dc815900c4  Updated makefile and cpufreq.h
+a88f583992f  Merge branch 'cm-14.1' of https://github.com/ShreyanshLodha/android_kernel_oneplus_msm8994 into cm-14.1
+342296f7810  Updated SC
+2ea1f056580  Updated cpufreq.h and makefile after adding new governors
+d31b93a2c80  Added elementalx,impulse,zzmoove governors
+
+====================
+     28-May-2017
+====================
+
+
