@@ -728,9 +728,7 @@ static int32_t msm_cci_i2c_read(struct v4l2_subdev *sd,
 	cci_dev = v4l2_get_subdevdata(sd);
 	master = c_ctrl->cci_info->cci_i2c_master;
 	read_cfg = &c_ctrl->cfg.cci_i2c_read_cfg;
-<<<<<<< HEAD
-	mutex_lock(&cci_dev->cci_master_info[master].mutex_q[queue]);
-=======
+
 	if (master >= MASTER_MAX || master < 0) {
 		pr_err("%s:%d Invalid I2C master %d\n",
 			__func__, __LINE__, master);
@@ -738,7 +736,6 @@ static int32_t msm_cci_i2c_read(struct v4l2_subdev *sd,
 	}
 
 	mutex_lock(&cci_dev->cci_master_info[master].mutex);
->>>>>>> 60997deba23c5e40fd3bcfbc6cb812c9facc79ff
 
 	/*
 	 * Call validate queue to make sure queue is empty before starting.

@@ -277,14 +277,7 @@ static int t_show(struct seq_file *m, void *v)
 	const char *str = *fmt;
 	int i;
 
-<<<<<<< HEAD
-	if (!*fmt)
-		return 0;
-
-	seq_printf(m, "0x%lx : \"", *(unsigned long *)fmt);
-=======
 	seq_printf(m, "0x%lx : \"", 0L);
->>>>>>> 60997deba23c5e40fd3bcfbc6cb812c9facc79ff
 
 	/*
 	 * Tabs and new lines need to be converted.
