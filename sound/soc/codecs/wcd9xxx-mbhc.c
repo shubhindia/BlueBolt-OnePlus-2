@@ -115,6 +115,7 @@
 #endif
 #define WCD9XXX_CS_MEAS_INVALD_RANGE_HIGH_MV 265
 
+#define HPH_TRANS_THRESHOLD 3
 /*
  * Threshold used to detect euro headset
  * with current source
