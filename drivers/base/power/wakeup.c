@@ -21,6 +21,7 @@
 
 #include "power.h"
 
+
 static bool enable_qcom_rx_wakelock_ws = true;
 module_param(enable_qcom_rx_wakelock_ws, bool, 0644);
 static bool enable_wlan_extscan_wl_ws = true;
@@ -37,6 +38,8 @@ static bool enable_netlink_ws = true;
 module_param(enable_netlink_ws, bool, 0644);
 static bool enable_netmgr_wl_ws = true;
 module_param(enable_netmgr_wl_ws, bool, 0644);
+static bool enable_screenoff_wakelock = true;
+module_param(enable_screenoff_wakelock, bool, 0644);
 
 /*
  * If set, the suspend/hibernate code will abort transitions to a sleep state
@@ -54,6 +57,13 @@ static atomic_t combined_event_count = ATOMIC_INIT(0);
 #define IN_PROGRESS_BITS	(sizeof(int) * 4)
 #define MAX_IN_PROGRESS		((1 << IN_PROGRESS_BITS) - 1)
 
+static const char *necessary_ws[] = {
+	"pwr_key",
+	"fpc_ttw_wl",
+	NULL
+};
+
+
 static void split_counters(unsigned int *cnt, unsigned int *inpr)
 {
 	unsigned int comb = atomic_read(&combined_event_count);
@@ -61,6 +71,7 @@ static void split_counters(unsigned int *cnt, unsigned int *inpr)
 	*cnt = (comb >> IN_PROGRESS_BITS);
 	*inpr = comb & MAX_IN_PROGRESS;
 }
+
 
 /* A preserved old value of the events counter. */
 static unsigned int saved_count;
@@ -460,6 +471,21 @@ static void wakeup_source_deactivate(struct wakeup_source *ws)
 		wake_up(&wakeup_count_wait_queue);
 }
 
+static bool is_necessary_ws(struct wakeup_source *ws)
+{
+	int i;
+
+	for (i = 0; necessary_ws[i]; i++) {
+		if (!strncmp(ws->name, necessary_ws[i],
+				strlen(ws->name)))
+			return true;
+	}
+
+	return false;
+}
+
+
+
 static bool wakeup_source_blocker(struct wakeup_source *ws)
 {
 	unsigned int wslen = 0;
@@ -481,7 +507,9 @@ static bool wakeup_source_blocker(struct wakeup_source *ws)
 			(!enable_timerfd_ws &&
 				!strncmp(ws->name, "[timerfd]", wslen)) ||
 			(!enable_netlink_ws &&
-				!strncmp(ws->name, "NETLINK", wslen))) {
+				!strncmp(ws->name, "NETLINK", wslen)) ||
+			(!enable_screenoff_wakelock &&
+				!is_necessary_ws(ws))) {
 			if (ws->active) {
 				wakeup_source_deactivate(ws);
 				pr_info("forcefully deactivate wakeup source: %s\n",
