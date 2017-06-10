@@ -422,6 +422,11 @@ static irqreturn_t atmel_twi_interrupt(int irq, void *dev_id)
 	/* catch error flags */
 	dev->transfer_status |= status;
 
+	if (irqstatus & (AT91_TWI_TXCOMP | AT91_TWI_NACK)) {
+		at91_disable_twi_interrupts(dev);
+		complete(&dev->cmd_complete);
+	}
+
 	return IRQ_HANDLED;
 }
 
@@ -430,6 +435,34 @@ static int at91_do_twi_transfer(struct at91_twi_dev *dev)
 	int ret;
 	bool has_unre_flag = dev->pdata->has_unre_flag;
 	unsigned sr;
+
+	/*
+	 * WARNING: the TXCOMP bit in the Status Register is NOT a clear on
+	 * read flag but shows the state of the transmission at the time the
+	 * Status Register is read. According to the programmer datasheet,
+	 * TXCOMP is set when both holding register and internal shifter are
+	 * empty and STOP condition has been sent.
+	 * Consequently, we should enable NACK interrupt rather than TXCOMP to
+	 * detect transmission failure.
+	 *
+	 * Besides, the TXCOMP bit is already set before the i2c transaction
+	 * has been started. For read transactions, this bit is cleared when
+	 * writing the START bit into the Control Register. So the
+	 * corresponding interrupt can safely be enabled just after.
+	 * However for write transactions managed by the CPU, we first write
+	 * into THR, so TXCOMP is cleared. Then we can safely enable TXCOMP
+	 * interrupt. If TXCOMP interrupt were enabled before writing into THR,
+	 * the interrupt handler would be called immediately and the i2c command
+	 * would be reported as completed.
+	 * Also when a write transaction is managed by the DMA controller,
+	 * enabling the TXCOMP interrupt in this function may lead to a race
+	 * condition since we don't know whether the TXCOMP interrupt is enabled
+	 * before or after the DMA has started to write into THR. So the TXCOMP
+	 * interrupt is enabled later by at91_twi_write_data_dma_callback().
+	 * Immediately after in that DMA callback, we still need to send the
+	 * STOP condition manually writing the corresponding bit into the
+	 * Control Register.
+	 */
 
 	/*
 	 * WARNING: the TXCOMP bit in the Status Register is NOT a clear on
