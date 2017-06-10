@@ -50,7 +50,11 @@ source "drivers/char/Kconfig"
 
 source "drivers/i2c/Kconfig"
 
+source "drivers/slimbus/Kconfig"
+
 source "drivers/spi/Kconfig"
+
+source "drivers/spmi/Kconfig"
 
 source "drivers/ssbi/Kconfig"
 
@@ -100,6 +104,8 @@ source "drivers/memstick/Kconfig"
 
 source "drivers/leds/Kconfig"
 
+source "drivers/switch/Kconfig"
+
 source "drivers/accessibility/Kconfig"
 
 source "drivers/infiniband/Kconfig"
@@ -107,6 +113,8 @@ source "drivers/infiniband/Kconfig"
 source "drivers/edac/Kconfig"
 
 source "drivers/rtc/Kconfig"
+
+source "drivers/esoc/Kconfig"
 
 source "drivers/dma/Kconfig"
 
@@ -164,6 +172,37 @@ source "drivers/irqchip/Kconfig"
 
 source "drivers/ipack/Kconfig"
 
+source "drivers/gud/Kconfig"
+
 source "drivers/reset/Kconfig"
 
+source "drivers/android/Kconfig"
+
+source "drivers/coresight/Kconfig"
+
+source "drivers/bif/Kconfig"
+
+source "drivers/sensors/Kconfig"
+
+source "drivers/phy/Kconfig"
+
+source "drivers/soc/Kconfig"
+
+source "drivers/firmware/Kconfig"
+
+#ifdef VENDOR_EDIT
+# hefaxi@filesystem,2015/05/05,support param partion read/write
+source "drivers/param_read_write/Kconfig"
+#endif
+
+#add by jiachenghui for support oem trace,2015/05/09
+#ifdef VENDOR_EDIT
+source "drivers/oem_debug/Kconfig"
+#endif
+#end add by jiachenghui for support oem trace,2015/05/09
+
+#ifdef VENDOR_EDIT
+#ted_lin@PerfLab add for op helper function
+source "drivers/op/Kconfig"
+#endif
 endmenu

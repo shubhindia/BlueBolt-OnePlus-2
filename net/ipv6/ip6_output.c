@@ -420,8 +420,9 @@ int ip6_forward(struct sk_buff *skb)
 	}
 
 	/* XXX: idev->cnf.proxy_ndp? */
-	if (net->ipv6.devconf_all->proxy_ndp &&
-	    pneigh_lookup(&nd_tbl, net, &hdr->daddr, skb->dev, 0)) {
+	if ((net->ipv6.devconf_all->proxy_ndp == 1 &&
+	    pneigh_lookup(&nd_tbl, net, &hdr->daddr, skb->dev, 0))
+	    || net->ipv6.devconf_all->proxy_ndp >= 2) {
 		int proxied = ip6_forward_proxy_check(skb);
 		if (proxied > 0)
 			return ip6_input(skb);
@@ -1384,8 +1385,20 @@ alloc_new_skb:
 			/*
 			 *	Fill in the control structures
 			 */
-			skb->ip_summed = CHECKSUM_NONE;
-			skb->csum = 0;
+
+			/* offload UDP checksum in case the packet is not
+			 * a fragment (length <= mtu && transhdrlen) and the
+			 * device supports it in its features.
+			 */
+			if ((rt->dst.dev->features &
+				NETIF_F_IPV6_UDP_CSUM) &&
+				(length <= mtu) && transhdrlen &&
+				(sk->sk_protocol == IPPROTO_UDP)) {
+				skb->ip_summed = CHECKSUM_PARTIAL;
+			} else {
+				skb->ip_summed = CHECKSUM_NONE;
+				skb->csum = 0;
+			}
 			/* reserve for fragmentation and ipsec header */
 			skb_reserve(skb, hh_len + sizeof(struct frag_hdr) +
 				    dst_exthdrlen);

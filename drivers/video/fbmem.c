@@ -32,7 +32,7 @@
 #include <linux/device.h>
 #include <linux/efi.h>
 #include <linux/fb.h>
-
+#include <linux/sched.h>
 #include <asm/fb.h>
 
 
@@ -1042,7 +1042,24 @@ fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var)
  done:
 	return ret;
 }
-
+/*ykl add debug log*/
+#ifdef VENDOR_EDIT
+void debug_blank(int blank,int start)
+{
+	if(start)
+	{
+			if(blank == FB_BLANK_UNBLANK)
+				printk("blank on start\n");
+			else if(blank == FB_BLANK_POWERDOWN)
+				printk("blank off start\n");
+	}else{
+			if(blank == FB_BLANK_UNBLANK)
+				printk("blank on end\n");
+			else if(blank == FB_BLANK_POWERDOWN)
+				printk("blank off end\n");
+	}
+}
+#endif
 int
 fb_blank(struct fb_info *info, int blank)
 {	
@@ -1054,11 +1071,16 @@ fb_blank(struct fb_info *info, int blank)
 
 	event.info = info;
 	event.data = &blank;
-
+/*ykl add debug log*/
+#ifdef VENDOR_EDIT
+	debug_blank(blank,1);
+#endif
 	early_ret = fb_notifier_call_chain(FB_EARLY_EVENT_BLANK, &event);
-
+	printk("Display need time start\n");
 	if (info->fbops->fb_blank)
  		ret = info->fbops->fb_blank(blank, info);
+	printk("Display need time end\n");
+
 
 	if (!ret)
 		fb_notifier_call_chain(FB_EVENT_BLANK, &event);
@@ -1070,7 +1092,17 @@ fb_blank(struct fb_info *info, int blank)
 		if (!early_ret)
 			fb_notifier_call_chain(FB_R_EARLY_EVENT_BLANK, &event);
 	}
-
+/*ykl add debug log*/
+#ifdef VENDOR_EDIT
+	debug_blank(blank,0);
+#endif
+#ifdef VENDOR_EDIT
+    //Wujialong 20160118 enable sched_boost when wakeup and disable sched_boost when screen on
+    if(blank==FB_BLANK_UNBLANK)
+    {
+       sched_set_boost(0);
+    }
+#endif
  	return ret;
 }
 
@@ -1122,6 +1154,10 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
 		if (copy_from_user(&cmap, argp, sizeof(cmap)))
 			return -EFAULT;
 		ret = fb_set_user_cmap(&cmap, info);
+		if (ret) {
+			if (info)
+				fb_dealloc_cmap(&info->cmap);
+		}
 		break;
 	case FBIOGETCMAP:
 		if (copy_from_user(&cmap, argp, sizeof(cmap)))
@@ -1194,14 +1230,11 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
 		unlock_fb_info(info);
 		break;
 	default:
-		if (!lock_fb_info(info))
-			return -ENODEV;
 		fb = info->fbops;
 		if (fb->fb_ioctl)
 			ret = fb->fb_ioctl(info, cmd, arg);
 		else
 			ret = -ENOTTY;
-		unlock_fb_info(info);
 	}
 	return ret;
 }
@@ -1440,6 +1473,7 @@ __releases(&info->lock)
 		goto out;
 	}
 	file->private_data = info;
+	info->file = file;
 	if (info->fbops->fb_open) {
 		res = info->fbops->fb_open(info,1);
 		if (res)
@@ -1464,6 +1498,7 @@ __releases(&info->lock)
 	struct fb_info * const info = file->private_data;
 
 	mutex_lock(&info->lock);
+	info->file = file;
 	if (info->fbops->fb_release)
 		info->fbops->fb_release(info,1);
 	module_put(info->fbops->owner);

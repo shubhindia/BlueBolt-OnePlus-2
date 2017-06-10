@@ -69,6 +69,10 @@ struct fuse_mount_data {
 	unsigned flags;
 	unsigned max_read;
 	unsigned blksize;
+#ifdef VENDOR_EDIT
+//liochen@filesystems, 2016/01/04, add for reserved memory
+	unsigned reserved_mem;
+#endif
 };
 
 struct fuse_forget_link *fuse_alloc_forget(void)
@@ -135,6 +139,7 @@ static void fuse_evict_inode(struct inode *inode)
 
 static int fuse_remount_fs(struct super_block *sb, int *flags, char *data)
 {
+	sync_filesystem(sb);
 	if (*flags & MS_MANDLOCK)
 		return -EINVAL;
 
@@ -170,8 +175,11 @@ void fuse_change_attributes_common(struct inode *inode, struct fuse_attr *attr,
 	inode->i_blocks  = attr->blocks;
 	inode->i_atime.tv_sec   = attr->atime;
 	inode->i_atime.tv_nsec  = attr->atimensec;
-	inode->i_mtime.tv_sec   = attr->mtime;
-	inode->i_mtime.tv_nsec  = attr->mtimensec;
+	/* mtime from server may be stale due to local buffered write */
+	if (!fc->writeback_cache || !S_ISREG(inode->i_mode)) {
+		inode->i_mtime.tv_sec   = attr->mtime;
+		inode->i_mtime.tv_nsec  = attr->mtimensec;
+	}
 	inode->i_ctime.tv_sec   = attr->ctime;
 	inode->i_ctime.tv_nsec  = attr->ctimensec;
 
@@ -197,6 +205,7 @@ void fuse_change_attributes(struct inode *inode, struct fuse_attr *attr,
 {
 	struct fuse_conn *fc = get_fuse_conn(inode);
 	struct fuse_inode *fi = get_fuse_inode(inode);
+	bool is_wb = fc->writeback_cache;
 	loff_t oldsize;
 	struct timespec old_mtime;
 
@@ -211,10 +220,16 @@ void fuse_change_attributes(struct inode *inode, struct fuse_attr *attr,
 	fuse_change_attributes_common(inode, attr, attr_valid);
 
 	oldsize = inode->i_size;
-	i_size_write(inode, attr->size);
+	/*
+	 * In case of writeback_cache enabled, the cached writes beyond EOF
+	 * extend local i_size without keeping userspace server in sync. So,
+	 * attr->size coming from server can be stale. We cannot trust it.
+	 */
+	if (!is_wb || !S_ISREG(inode->i_mode))
+		i_size_write(inode, attr->size);
 	spin_unlock(&fc->lock);
 
-	if (S_ISREG(inode->i_mode)) {
+	if (!is_wb && S_ISREG(inode->i_mode)) {
 		bool inval = false;
 
 		if (oldsize != attr->size) {
@@ -243,6 +258,8 @@ static void fuse_init_inode(struct inode *inode, struct fuse_attr *attr)
 {
 	inode->i_mode = attr->mode & S_IFMT;
 	inode->i_size = attr->size;
+	inode->i_mtime.tv_sec  = attr->mtime;
+	inode->i_mtime.tv_nsec = attr->mtimensec;
 	if (S_ISREG(inode->i_mode)) {
 		fuse_init_common(inode);
 		fuse_init_file_inode(inode);
@@ -289,7 +306,9 @@ struct inode *fuse_iget(struct super_block *sb, u64 nodeid,
 		return NULL;
 
 	if ((inode->i_state & I_NEW)) {
-		inode->i_flags |= S_NOATIME|S_NOCMTIME;
+		inode->i_flags |= S_NOATIME;
+		if (!fc->writeback_cache || !S_ISREG(inode->i_mode))
+			inode->i_flags |= S_NOCMTIME;
 		inode->i_generation = generation;
 		inode->i_data.backing_dev_info = &fc->bdi;
 		fuse_init_inode(inode, attr);
@@ -390,6 +409,37 @@ static void fuse_put_super(struct super_block *sb)
 	fuse_conn_put(fc);
 }
 
+#ifdef VENDOR_EDIT
+//liochen@filesystems, 2016/01/04, add for reserved memory
+static int handle_reserved_statfs(struct kstatfs *stbuf, u32 reserved_mem)
+{
+	u32 reserved_blocks;
+
+	if(stbuf->f_bsize == 0){
+		printk(KERN_ERR "Invalid fuse statfs informations, block size is 0\n");
+		return -EINVAL;
+	}
+
+	reserved_blocks = ((reserved_mem * 1024 * 1024)/stbuf->f_bsize);
+
+	stbuf->f_blocks  -= reserved_blocks;
+
+	if(stbuf->f_bfree < reserved_blocks) {
+		stbuf->f_bfree = 0;
+	} else {
+		stbuf->f_bfree -= reserved_blocks;
+	}
+
+	if(stbuf->f_bavail < reserved_blocks) {
+		stbuf->f_bavail = 0;
+	} else {
+		stbuf->f_bavail -= reserved_blocks;
+	}
+
+	return 0;
+}
+#endif /* VENDOR_EDIT */
+
 static void convert_fuse_statfs(struct kstatfs *stbuf, struct fuse_kstatfs *attr)
 {
 	stbuf->f_type    = FUSE_SUPER_MAGIC;
@@ -433,6 +483,13 @@ static int fuse_statfs(struct dentry *dentry, struct kstatfs *buf)
 	err = req->out.h.error;
 	if (!err)
 		convert_fuse_statfs(buf, &outarg.st);
+
+#ifdef VENDOR_EDIT
+//liochen@filesystems, 2016/01/04, add for reserved memory
+	if(!err && fc->reserved_mem != 0)
+		handle_reserved_statfs(buf,fc->reserved_mem);
+#endif
+
 	fuse_put_request(fc, req);
 	return err;
 }
@@ -446,6 +503,10 @@ enum {
 	OPT_ALLOW_OTHER,
 	OPT_MAX_READ,
 	OPT_BLKSIZE,
+#ifdef VENDOR_EDIT
+//liochen@filesystems, 2016/01/04, add for reserved memory
+	OPT_RESERVED_MEM,
+#endif
 	OPT_ERR
 };
 
@@ -458,6 +519,10 @@ static const match_table_t tokens = {
 	{OPT_ALLOW_OTHER,		"allow_other"},
 	{OPT_MAX_READ,			"max_read=%u"},
 	{OPT_BLKSIZE,			"blksize=%u"},
+#ifdef VENDOR_EDIT
+//liochen@filesystems, 2016/01/04, add for reserved memory
+	{OPT_RESERVED_MEM,		"reserved_mem=%u"},
+#endif
 	{OPT_ERR,			NULL}
 };
 
@@ -543,6 +608,14 @@ static int parse_fuse_opt(char *opt, struct fuse_mount_data *d, int is_bdev)
 			d->blksize = value;
 			break;
 
+#ifdef VENDOR_EDIT
+//liochen@filesystems, 2016/01/04, add for reserved memory
+		case OPT_RESERVED_MEM:
+			if (match_int(&args[0], &value))
+				return 0;
+			d->reserved_mem = value;
+			break;
+#endif
 		default:
 			return 0;
 		}
@@ -570,6 +643,13 @@ static int fuse_show_options(struct seq_file *m, struct dentry *root)
 		seq_printf(m, ",max_read=%u", fc->max_read);
 	if (sb->s_bdev && sb->s_blocksize != FUSE_DEFAULT_BLKSIZE)
 		seq_printf(m, ",blksize=%lu", sb->s_blocksize);
+
+#ifdef VENDOR_EDIT
+//liochen@filesystems, 2016/01/04, add for reserved memory
+	if(fc->reserved_mem != 0)
+		seq_printf(m, ",reserved_mem=%uMB",fc->reserved_mem);
+#endif
+
 	return 0;
 }
 
@@ -798,7 +878,7 @@ static const struct super_operations fuse_super_operations = {
 static void sanitize_global_limit(unsigned *limit)
 {
 	if (*limit == 0)
-		*limit = ((num_physpages << PAGE_SHIFT) >> 13) /
+		*limit = ((totalram_pages << PAGE_SHIFT) >> 13) /
 			 sizeof(struct fuse_req);
 
 	if (*limit >= 1 << 16)
@@ -887,6 +967,19 @@ static void process_init_reply(struct fuse_conn *fc, struct fuse_req *req)
 			}
 			if (arg->flags & FUSE_ASYNC_DIO)
 				fc->async_dio = 1;
+			if (arg->flags & FUSE_WRITEBACK_CACHE)
+				fc->writeback_cache = 1;
+			if (arg->flags & FUSE_SHORTCIRCUIT) {
+				fc->writeback_cache = 0;
+				fc->shortcircuit_io = 1;
+				pr_info("FUSE: SHORTCIRCUIT enabled [%s : %d]!\n",
+					current->comm, current->pid);
+			}
+			if (arg->time_gran && arg->time_gran <= 1000000000)
+				fc->sb->s_time_gran = arg->time_gran;
+			else
+				fc->sb->s_time_gran = 1000000000;
+
 		} else {
 			ra_pages = fc->max_read / PAGE_CACHE_SIZE;
 			fc->no_lock = 1;
@@ -914,7 +1007,8 @@ static void fuse_send_init(struct fuse_conn *fc, struct fuse_req *req)
 		FUSE_EXPORT_SUPPORT | FUSE_BIG_WRITES | FUSE_DONT_MASK |
 		FUSE_SPLICE_WRITE | FUSE_SPLICE_MOVE | FUSE_SPLICE_READ |
 		FUSE_FLOCK_LOCKS | FUSE_HAS_IOCTL_DIR | FUSE_AUTO_INVAL_DATA |
-		FUSE_DO_READDIRPLUS | FUSE_READDIRPLUS_AUTO | FUSE_ASYNC_DIO;
+		FUSE_DO_READDIRPLUS | FUSE_READDIRPLUS_AUTO | FUSE_ASYNC_DIO |
+		FUSE_WRITEBACK_CACHE;
 	req->in.h.opcode = FUSE_INIT;
 	req->in.numargs = 1;
 	req->in.args[0].size = sizeof(*arg);
@@ -942,7 +1036,7 @@ static int fuse_bdi_init(struct fuse_conn *fc, struct super_block *sb)
 	fc->bdi.name = "fuse";
 	fc->bdi.ra_pages = (VM_MAX_READAHEAD * 1024) / PAGE_CACHE_SIZE;
 	/* fuse does it's own writeback accounting */
-	fc->bdi.capabilities = BDI_CAP_NO_ACCT_WB;
+	fc->bdi.capabilities = BDI_CAP_NO_ACCT_WB | BDI_CAP_STRICTLIMIT;
 
 	err = bdi_init(&fc->bdi);
 	if (err)
@@ -1047,6 +1141,11 @@ static int fuse_fill_super(struct super_block *sb, void *data, int silent)
 	fc->user_id = d.user_id;
 	fc->group_id = d.group_id;
 	fc->max_read = max_t(unsigned, 4096, d.max_read);
+
+#ifdef VENDOR_EDIT
+//liochen@filesystems, 2016/01/04, add for reserved memory
+	fc->reserved_mem = d.reserved_mem;
+#endif
 
 	/* Used by get_root_inode() */
 	sb->s_fs_info = fc;
