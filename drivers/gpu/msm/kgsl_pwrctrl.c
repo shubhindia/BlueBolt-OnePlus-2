@@ -1549,9 +1549,6 @@ int kgsl_pwrctrl_init(struct kgsl_device *device)
 	pwr->max_pwrlevel = DEFAULT_MAX_PWRLEVEL;
 #else
 	pwr->max_pwrlevel = 0;
-<<<<<<< HEAD
-	pwr->min_pwrlevel = pdata->num_levels - 3;
-=======
 #endif
 
 #ifdef DEFAULT_MIN_PWRLEVEL
@@ -1560,7 +1557,6 @@ int kgsl_pwrctrl_init(struct kgsl_device *device)
 	pwr->min_pwrlevel = pdata->num_levels - 2;
 #endif
 
->>>>>>> 188be589c99... kgsl_pwrctrl: Generic power level initialisation and hardlimits for powerlevels
 	pwr->thermal_pwrlevel = 0;
 
 	// AP: initialize hard limits
