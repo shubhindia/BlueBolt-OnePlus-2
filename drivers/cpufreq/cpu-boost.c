@@ -25,11 +25,8 @@
 #include <linux/slab.h>
 #include <linux/input.h>
 #include <linux/time.h>
-<<<<<<< HEAD
-=======
 
 #include "../../kernel/sched/sched.h"
->>>>>>> 441cc3723dc... cpufreq: cpu-boost: don't boost big cluster on input touch
 
 struct cpu_sync {
 	struct task_struct *thread;
@@ -81,19 +78,8 @@ static bool sched_boost_active;
 static struct delayed_work input_boost_rem;
 static u64 last_input_time;
 #define MIN_INPUT_INTERVAL (150 * USEC_PER_MSEC)
-<<<<<<< HEAD
-=======
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-static unsigned int cnt_nr_running;
->>>>>>> 441cc3723dc... cpufreq: cpu-boost: don't boost big cluster on input touch
-=======
 static unsigned int big_nr_running;
->>>>>>> ace59fd2fc1... drivers: cpu-boost: cosmetic changes
-=======
-static unsigned int big_nr_running;
->>>>>>> ace59fd2fc1... drivers: cpu-boost: cosmetic changes
 
 static int set_input_boost_freq(const char *buf, const struct kernel_param *kp)
 {
@@ -181,27 +167,7 @@ static int boost_adjust_notify(struct notifier_block *nb, unsigned long val,
 
 		min = max(b_min, ib_min);
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-		pr_debug("CPU%u policy min before boost: %u kHz\n",
-			 cpu, policy->min);
-		pr_debug("CPU%u boost min: %u kHz\n", cpu, min);
-
-		cpufreq_verify_within_limits(policy, min, UINT_MAX);
-
-		pr_debug("CPU%u policy min after boost: %u kHz\n",
-			 cpu, policy->min);
-		break;
-
-=======
-		if (cpu == 4 && min > 0 && cnt_nr_running == 0)
-=======
 		if (cpu == 4 && min > 0 && big_nr_running == 0)
->>>>>>> ace59fd2fc1... drivers: cpu-boost: cosmetic changes
-=======
-		if (cpu == 4 && min > 0 && big_nr_running == 0)
->>>>>>> ace59fd2fc1... drivers: cpu-boost: cosmetic changes
                         break;
 
 		min = min(min, policy->max);
@@ -216,7 +182,6 @@ static int boost_adjust_notify(struct notifier_block *nb, unsigned long val,
 			 cpu, policy->min);
 		break;
 
->>>>>>> 441cc3723dc... cpufreq: cpu-boost: don't boost big cluster on input touch
 	case CPUFREQ_START:
 		set_cpus_allowed(s->thread, *cpumask_of(cpu));
 		break;
@@ -447,11 +412,7 @@ static void cpuboost_input_event(struct input_handle *handle,
 		return;
 
 	now = ktime_to_us(ktime_get());
-<<<<<<< HEAD
-	if (now - last_input_time < MIN_INPUT_INTERVAL)
-=======
 	if (now - last_input_time < (input_boost_ms * USEC_PER_MSEC))
->>>>>>> 441cc3723dc... cpufreq: cpu-boost: don't boost big cluster on input touch
 		return;
 
 	if (work_pending(&input_boost_work))
