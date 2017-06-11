@@ -33,7 +33,6 @@
 #include <sound/pcm_params.h>
 #include <sound/q6core.h>
 #include <sound/audio_cal_utils.h>
-#include <sound/msm-dts-eagle.h>
 #include <sound/audio_effects.h>
 #include <sound/hwdep.h>
 #include <sound/sounddebug.h>
@@ -174,6 +173,7 @@ static void msm_pcm_routing_cfg_pp(int port_id, int copp_idx, int topology,
 					__func__, topology, port_id, rc);
 		}
 		break;
+<<<<<<< HEAD
 	case ADM_CMD_COPP_OPEN_TOPOLOGY_ID_DTS_HPX:
 		pr_debug("%s: DTS_EAGLE_COPP_TOPOLOGY_ID\n", __func__);
 		msm_dts_eagle_init_post(port_id, copp_idx);
@@ -186,6 +186,8 @@ static void msm_pcm_routing_cfg_pp(int port_id, int copp_idx, int topology,
         dirac_copp_id = copp_idx;
         break;
 #endif/*VENDOR_EDIT*/
+=======
+>>>>>>> 60997deba23c5e40fd3bcfbc6cb812c9facc79ff
 	default:
 		/* custom topology specific feature param handlers */
 		break;
@@ -212,10 +214,6 @@ static void msm_pcm_routing_deinit_pp(int port_id, int topology)
 			pr_debug("%s: DOLBY_ADM_COPP_TOPOLOGY_ID\n", __func__);
 			msm_dolby_dap_deinit(port_id);
 		}
-		break;
-	case ADM_CMD_COPP_OPEN_TOPOLOGY_ID_DTS_HPX:
-		pr_debug("%s: DTS_EAGLE_COPP_TOPOLOGY_ID\n", __func__);
-		msm_dts_eagle_deinit_post(port_id, topology);
 		break;
 	default:
 		/* custom topology specific feature deinit handlers */
@@ -6257,8 +6255,6 @@ static int msm_routing_probe(struct snd_soc_platform *platform)
 			return -ENOMEM;
 		snd_ctl_add(platform->card->snd_card, kctl);
 	}
-
-	msm_dts_eagle_add_controls(platform);
 	return 0;
 }
 
