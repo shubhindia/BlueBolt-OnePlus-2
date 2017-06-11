@@ -1549,7 +1549,6 @@ int kgsl_pwrctrl_init(struct kgsl_device *device)
 	pwr->max_pwrlevel = DEFAULT_MAX_PWRLEVEL;
 #else
 	pwr->max_pwrlevel = 0;
-<<<<<<< HEAD
 #endif
 
 #ifdef DEFAULT_MIN_PWRLEVEL
@@ -1558,9 +1557,6 @@ int kgsl_pwrctrl_init(struct kgsl_device *device)
 	pwr->min_pwrlevel = pdata->num_levels - 2;
 #endif
 
-=======
-	pwr->min_pwrlevel = pdata->num_levels - 2;
->>>>>>> da8569e4e54... Revert "kgsl_pwrctrl: Ensure default behaviour is without GPU underclocking"
 	pwr->thermal_pwrlevel = 0;
 
 	// AP: initialize hard limits
