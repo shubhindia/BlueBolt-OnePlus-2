@@ -589,7 +589,7 @@ KBUILD_CFLAGS	+= $(call cc-disable-warning,maybe-uninitialized,)
 ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
 KBUILD_CFLAGS	+= -Os
 else
-KBUILD_CFLAGS	+= -finline-functions -O2
+KBUILD_CFLAGS	+= -finline-functions -O2 $(call cc-disable-warning,maybe-uninitialized,)
 endif
 
 
