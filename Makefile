@@ -592,6 +592,19 @@ else
 KBUILD_CFLAGS	+= -finline-functions -O2 $(call cc-disable-warning,maybe-uninitialized,)
 endif
 
+# Optimization flags
+KBUILD_CFLAGS	+= -g0 -DNDEBUG \
+		   -fgraphite \
+		   -fgraphite-identity \
+		   -fivopts \
+		   -floop-block \
+		   -floop-interchange \
+		   -floop-strip-mine \
+		   -fmodulo-sched \
+		   -fmodulo-sched-allow-regmoves \
+		   -fomit-frame-pointer \
+		   -ftree-loop-distribution \
+		   -ftree-loop-linear
 
 # Tell gcc to never replace conditional load with a non-conditional one
 KBUILD_CFLAGS	+= $(call cc-option,--param=allow-store-data-races=0)
