@@ -995,7 +995,7 @@ static void fpc1020_suspend_resume(struct work_struct *work)
 		set_fpc_irq(fpc1020, true);
 		set_fingerprintd_nice(0);
 	} else {
-		set_fingerprintd_nice(-20);
+		set_fingerprintd_nice(-1);
 	}
 
 	sysfs_notify(&fpc1020->dev->kobj, NULL,
