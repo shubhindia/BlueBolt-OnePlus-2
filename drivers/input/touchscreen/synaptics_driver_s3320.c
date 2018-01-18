@@ -520,6 +520,8 @@ struct synaptics_ts_data {
 	char test_limit_name[TP_FW_NAME_MAX_LEN];
 	char fw_id[12];
 	char manu_name[12];
+	
+	struct work_struct pm_work;
 };
 
 static struct device_attribute attrs_oem[] = {
@@ -3460,6 +3462,26 @@ static int synaptics_parse_dts(struct device *dev, struct synaptics_ts_data *ts)
 
 	return rc;
 }
+
+static void synaptics_suspend_resume(struct work_struct *work)
+{
+	struct synaptics_ts_data *ts =
+		container_of(work, typeof(*ts), pm_work);
+
+	mutex_lock(&ts->mutex);
+	if (ts->is_suspended) {
+		synaptics_ts_resume(&ts->client->dev);
+		ts->is_suspended = 0;
+		atomic_set(&ts->is_stop, 0);
+	} else {
+		synaptics_ts_suspend(&ts->client->dev);
+		ts->is_suspended = 1;
+		ts->touch_active = false;
+	}
+	mutex_unlock(&ts->mutex);
+}
+
+
 #ifdef SUPPORT_VIRTUAL_KEY
 #define VK_KEY_X    180
 #define VK_CENTER_Y 2018//2260
@@ -3598,15 +3620,7 @@ static int synaptics_ts_probe(struct i2c_client *client, const struct i2c_device
 
 	push_component_info(TP, ts->fw_id, ts->manu_name);
 
-	synaptics_wq = create_singlethread_workqueue("synaptics_wq");
-	if( !synaptics_wq ){
-		ret = -ENOMEM;
-		goto exit_createworkqueue_failed;
-	}
-	
-	INIT_WORK(ts->pm_work, synaptics_ts_work_func);
-
-	synaptics_report = create_singlethread_workqueue("synaptics_report");
+	synaptics_report = alloc_ordered_workqueue("synaptics_report", WQ_HIGHPRI);
 	if( !synaptics_report ){
 		ret = -ENOMEM;
 		goto exit_createworkqueue_failed;
@@ -3639,6 +3653,15 @@ static int synaptics_ts_probe(struct i2c_client *client, const struct i2c_device
 	if(ret < 0) {
 		TPD_ERR("synaptics_input_init failed!\n");
 	}
+	
+	synaptics_wq = alloc_ordered_workqueue("synaptics_wq", WQ_HIGHPRI);
+	if( !synaptics_wq ){
+		ret = -ENOMEM;
+		goto exit_createworkqueue_failed;
+	}
+	
+	INIT_WORK(&ts->pm_work, synaptics_suspend_resume);
+	
 #if defined(CONFIG_FB)
 	ts->fb_notif.notifier_call = fb_notifier_callback;
 	ts->fb_notif.priority = INT_MAX;
