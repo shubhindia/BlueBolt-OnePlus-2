@@ -315,7 +315,6 @@ int vibrate_userspace = 1;
 static int synaptics_i2c_suspend(struct device *dev);
 static int synaptics_i2c_resume(struct device *dev);
 /**************I2C resume && suspend end*********/
-static void speedup_synaptics_resume(struct work_struct *work);
 static int synaptics_ts_resume(struct device *dev);
 static int synaptics_ts_suspend(struct device *dev);
 static int synaptics_ts_remove(struct i2c_client *client);
@@ -3604,7 +3603,8 @@ static int synaptics_ts_probe(struct i2c_client *client, const struct i2c_device
 		ret = -ENOMEM;
 		goto exit_createworkqueue_failed;
 	}
-	INIT_DELAYED_WORK(&ts->speed_up_work,speedup_synaptics_resume);
+	
+	INIT_WORK(ts->pm_work, synaptics_ts_work_func);
 
 	synaptics_report = create_singlethread_workqueue("synaptics_report");
 	if( !synaptics_report ){
@@ -3830,16 +3830,6 @@ static int synaptics_ts_suspend(struct device *dev)
 	return 0;
 }
 
-static void speedup_synaptics_resume(struct work_struct *work)
-{
-    touch_enable(ts_g);
-#ifdef SUPPORT_GLOVES_MODE
-	ret = synaptics_glove_mode_enable(ts_g);
-	if(ret){
-		TPD_ERR("%s: set gloves mode err!!\n", __func__);
-	}
-#endif
-}
 
 static int synaptics_ts_resume(struct device *dev)
 {
@@ -3893,7 +3883,7 @@ static int synaptics_ts_resume(struct device *dev)
     msleep(5);
     gpio_set_value(ts->reset_gpio,1);
 #endif
-    //queue_delayed_work(synaptics_wq,&ts->speed_up_work, msecs_to_jiffies(500));
+    	touch_enable(ts);
 	TPD_ERR("%s:normal end!\n", __func__);
 ERR_RESUME:
 	return 0;
@@ -3933,47 +3923,36 @@ static int synaptics_mode_change(int mode)
 		TPD_ERR("%s: set dose mode err!!\n", __func__);
 	return ret;
 }
+
 #if defined(CONFIG_FB)
 static int fb_notifier_callback(struct notifier_block *self, unsigned long event, void *data)
 {
+	struct synaptics_ts_data *ts =
+		container_of(self, struct synaptics_ts_data, fb_notif);
 	struct fb_event *evdata = data;
-	int *blank;
-	//int ret;
+	int *blank = evdata->data;
 
-	struct synaptics_ts_data *ts = container_of(self, struct synaptics_ts_data, fb_notif);
-
-	if(FB_EARLY_EVENT_BLANK != event && FB_EVENT_BLANK != event)
-	return 0;
-	if((evdata) && (evdata->data) && (ts) && (ts->client)) {
-		blank = evdata->data;
-		if((*blank == FB_BLANK_UNBLANK || *blank == FB_BLANK_VSYNC_SUSPEND)\
-            && (event == FB_EARLY_EVENT_BLANK )) {
-            if (ts->is_suspended == 1)
-            {
-                TPD_DEBUG("%s going TP resume\n", __func__);
-				synaptics_ts_resume(&ts->client->dev);
-                ts->is_suspended = 0;
-                atomic_set(&ts->is_stop,0);
-            }
-		} else if( *blank == FB_BLANK_POWERDOWN && (event == FB_EVENT_BLANK )) {
-            if (ts->is_suspended == 0)
-            {
-                TPD_DEBUG("%s : going TP suspend\n", __func__);
-                synaptics_ts_suspend(&ts->client->dev);
-                ts->is_suspended = 1;
-                ts->touch_active = false;
-            }
+	if (event == FB_EARLY_EVENT_BLANK) {
+		switch (*blank) {
+		case FB_BLANK_UNBLANK:
+		case FB_BLANK_VSYNC_SUSPEND:
+			if (ts->is_suspended)
+				queue_work(synaptics_wq, &ts->pm_work);
+			break;
+		case FB_BLANK_POWERDOWN:
+			atomic_set(&ts->is_stop, 1);
+			break;
 		}
-        else if( *blank == FB_BLANK_UNBLANK && (event == FB_EVENT_BLANK )) {
-				//ret = synaptics_mode_change(0x04);
-				//TPD_DEBUG("%s %d F01_RMI_CTRL00:0x%x = 0x%x\n",__func__,__LINE__,
-				//	F01_RMI_CTRL00,i2c_smbus_read_byte_data(ts_g->client, F01_RMI_CTRL00));
-				queue_delayed_work(synaptics_wq,&ts->speed_up_work, msecs_to_jiffies(5));
-		}else if( *blank == FB_BLANK_POWERDOWN && (event == FB_EARLY_EVENT_BLANK )) {
-            atomic_set(&ts->is_stop,1);
+	} else if (event == FB_EVENT_BLANK) {
+		switch (*blank) {
+		case FB_BLANK_POWERDOWN:
+			if (!ts->is_suspended)
+				queue_work(synaptics_wq, &ts->pm_work);
+			break;
 		}
 	}
-	return 0;
+
+	return NOTIFY_OK;
 }
 #endif
 
