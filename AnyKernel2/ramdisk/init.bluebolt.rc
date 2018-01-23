@@ -92,8 +92,8 @@ on property:sys.bootcomplete=1
 
 on property:dev.bootcomplete=1
     # Default IO Schedular
-    write /sys/block/mmcblk0/queue/scheduler maple
-    setprop sys.io.scheduler "maple"
+    write /sys/block/mmcblk0/queue/scheduler cfq
+    setprop sys.io.scheduler "cfq"
 
     # Disable Input Boost
     write /sys/module/cpu_boost/parameters/input_boost_enabled 0
