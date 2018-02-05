@@ -44,19 +44,15 @@ static LIST_HEAD(devfreq_governor_list);
 static LIST_HEAD(devfreq_list);
 static DEFINE_MUTEX(devfreq_list_lock);
 
+#define WAKE_BOOST_DURATION_MS (5000)
+
 /* List of devices to boost when the screen is woken */
 static const char *boost_devices[] = {
-	"soc:qcom,cpubw.33",
+	"soc:qcom,cpubw",
 };
 
 static struct delayed_work wake_unboost_work;
 static struct work_struct wake_boost_work;
-
-static bool boost_enabled = true;
-module_param(boost_enabled, bool, 0755);
-
-static unsigned int boost_duration = 5000;
-module_param(boost_duration, uint, 0755);
 
 /**
  * find_device_devfreq() - find devfreq struct using device pointer
@@ -212,7 +208,7 @@ int update_devfreq(struct devfreq *devfreq)
 		return -EINVAL;
 
 	/* Reevaluate the proper frequency */
-	if (devfreq->do_wake_boost && boost_enabled) {
+	if (devfreq->do_wake_boost) {
 		/* Use the max freq when the screen is turned on */
 		freq = UINT_MAX;
 		pr_info("GPU Boosted");
@@ -481,7 +477,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
 {
 	struct devfreq *devfreq;
 	struct devfreq_governor *governor;
-	int err = 0;
+	int i, err = 0;
 
 	if (!dev || !profile || !governor_name) {
 		dev_err(dev, "%s: Invalid parameters.\n", __func__);
@@ -551,6 +547,13 @@ struct devfreq *devfreq_add_device(struct device *dev,
 		dev_err(dev, "%s: Unable to start governor for the device\n",
 			__func__);
 		goto err_init;
+	}
+	
+	for (i = 0; i < ARRAY_SIZE(boost_devices); i++) {
+		if (!strcmp(dev_name(dev), boost_devices[i])) {
+			devfreq->needs_wake_boost = true;
+			break;
+		}
 	}
 
 	return devfreq;
@@ -1013,26 +1016,13 @@ static struct device_attribute devfreq_attrs[] = {
 	{ },
 };
 
-static bool is_boost_device(struct devfreq *df)
-{
-	int i;
-
-	for (i = 0; i < ARRAY_SIZE(boost_devices); i++) {
-		if (!strncmp(dev_name(&df->dev), boost_devices[i],
-				DEVFREQ_NAME_LEN))
-			return true;
-	}
-
-	return false;
-}
-
 static void set_wake_boost(bool enable)
 {
 	struct devfreq *df;
 
 	mutex_lock(&devfreq_list_lock);
 	list_for_each_entry(df, &devfreq_list, node) {
-		if (!is_boost_device(df))
+		if (!df->needs_wake_boost)
 			continue;
 
 		mutex_lock(&df->lock);
@@ -1047,7 +1037,7 @@ static void wake_boost_fn(struct work_struct *work)
 {
 	set_wake_boost(true);
 	schedule_delayed_work(&wake_unboost_work,
-			msecs_to_jiffies(boost_duration));
+			msecs_to_jiffies(WAKE_BOOST_DURATION_MS));
 }
 
 static void wake_unboost_fn(struct work_struct *work)
@@ -1062,7 +1052,7 @@ static int fb_notifier_callback(struct notifier_block *nb,
 	int *blank = evdata->data;
 
 	/* Parse framebuffer events as soon as they occur */
-	if (action != FB_EVENT_BLANK)
+	if (action != FB_EARLY_EVENT_BLANK)
 		return NOTIFY_OK;
 
 	switch (*blank) {
