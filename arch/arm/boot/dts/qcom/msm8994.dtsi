@@ -1117,6 +1117,7 @@
 		qcom,bark-time = <20000>;
 		qcom,pet-time = <15000>;
 		qcom,ipi-ping;
+		qcom,wakeup-enable;
 	};
 
 	qcom,msm-rtb {
