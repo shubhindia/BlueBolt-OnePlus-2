@@ -19,6 +19,11 @@ on post-fs
     chmod 0666 /proc/fingerprint/proximity_status
     chown system system /proc/fingerprint/proximity_status
     
+on late-fs
+    write /sys/block/mmcblk0/queue/iostats 0
+    write /sys/block/mmcblk0/queue/nr_requests 256
+    write /sys/block/mmcblk0/queue/iosched/slice_idle 0
+    
 
 on property:sys.bootcomplete=1
     # according to Qcom this legacy value improves first launch latencies
@@ -56,7 +61,7 @@ on property:sys.bootcomplete=1
     write /sys/block/mmcblk0/queue/rq_affinity 0
     write /sys/block/mmcblk0/queue/add_random 0
     write /sys/block/mmcblk0/bdi/min_ratio 5
-    write /sys/block/mmcblk0/queue/read_ahead_kb 2048
+    write /sys/block/mmcblk0/queue/read_ahead_kb 256
     write /sys/block/mmcblk0/queue/iosched/writes_starved 4
     write /sys/block/mmcblk0/queue/iosched/fifo_batch 16
     write /sys/block/mmcblk0/queue/iosched/sync_read_expire 350
@@ -64,6 +69,8 @@ on property:sys.bootcomplete=1
     write /sys/block/mmcblk0/queue/iosched/async_read_expire 250
     write /sys/block/mmcblk0/queue/iosched/async_write_expire 450
     write /sys/block/mmcblk0/queue/iosched/sleep_latency_multiple 10
+    write /sys/block/mmcblk0/queue/nr_requests 128
+    /sys/block/mmcblk0/queue/iostats 1
 
     # ksm
     write /sys/kernel/mm/ksm/sleep_millisecs 1500
@@ -150,10 +157,3 @@ on charger
     write /sys/devices/soc.0/f9824900.sdhci/clkgate_enable 1
     write /sys/devices/soc.0/f9824900.sdhci/hibern8_on_idle_enable 1
     write /sys/module/lpm_levels/parameters/sleep_disabled N
-    
-
-on late-fs
-    write /sys/block/mmcblk0/queue/iostats 0
-    write /sys/block/mmcblk0/queue/nr_requests 256
-    write /sys/block/mmcblk0/queue/iosched/slice_idle 0
-
