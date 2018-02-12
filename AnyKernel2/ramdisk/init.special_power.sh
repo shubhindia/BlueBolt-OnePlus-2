@@ -51,7 +51,7 @@ get-set-forall /sys/class/devfreq/qcom,cpubw*/bw_hwmon/up_scale 250
 get-set-forall /sys/class/devfreq/qcom,cpubw*/bw_hwmon/idle_mbps 1600
 get-set-forall /sys/class/devfreq/qcom,mincpubw*/governor cpufreq
 
-FINGERPRINTD=`pidof fingerprintd`
+FINGERPRINTD=`pidof /vendor/bin/hw/android.hardware.biometrics.fingerprint@2.0-service`
 QSEECOMD=`pidof qseecomd`
 THERMAL-ENGINE=`pidof thermal-engine`
 TIME_DAEMON=`pidof time_daemon`
