@@ -2286,7 +2286,7 @@ i2c_msm_frmwrk_xfer(struct i2c_adapter *adap, struct i2c_msg msgs[], int num)
 		dev_err(ctrl->dev, " error on msgs Accessing invalid  pointer location\n");
 		return PTR_ERR(msgs);
 	}
-
+	
 	/* If system is suspended then make it resume */
 	if (atomic_read(&i2c_suspended)) {
 		release_wakeup = true;
