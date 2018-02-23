@@ -105,6 +105,8 @@ static ssize_t store_min_cpus(struct cpu_data *state,
 	if (sscanf(buf, "%u\n", &val) != 1)
 		return -EINVAL;
 
+	pr_err("Current process is %s\n", current->comm);
+
 	if (!strncmp(current->comm, "system_server", 13) ||
 			!strncmp(current->comm, "PowerManager", 12) ||
 			!strncmp(current->comm, "Binder", 6) ||
@@ -129,6 +131,8 @@ static ssize_t store_max_cpus(struct cpu_data *state,
 
 	if (sscanf(buf, "%u\n", &val) != 1)
 		return -EINVAL;
+
+	pr_err("Current process is %s\n", current->comm);
 
 	if (!strncmp(current->comm, "system_server", 13) ||
 			!strncmp(current->comm, "PowerManager", 12) ||
