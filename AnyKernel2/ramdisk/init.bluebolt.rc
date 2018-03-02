@@ -120,7 +120,6 @@ on property:sys.bootcomplete=1
 
     exec u:r:su:s0 root root -- /init.special_power.sh
     exec u:r:supersu:s0 root root -- /init.special_power.sh
-    
 
 on property:dev.bootcomplete=1
     # Default IO Schedular

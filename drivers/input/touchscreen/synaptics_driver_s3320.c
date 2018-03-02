@@ -2915,6 +2915,11 @@ static int init_synaptics_proc(void)
 		ret = -ENOMEM;
 		TPD_ERR("Couldn't create double_tap_enable\n");
 	}
+
+    prEntry_tmp = proc_symlink("double_tap",prEntry_tp, "double_tap_enable");
+	if(prEntry_tmp == NULL){
+		TPD_ERR("Couldn't create double_tap Symlink\n");
+	}
 	
 	prEntry_tmp = proc_create("vibrate_dt2w", 0666, prEntry_tp, &vibrate_dttw_proc_fops);
 	if(prEntry_tmp == NULL){
@@ -2928,10 +2933,20 @@ static int init_synaptics_proc(void)
 		TPD_ERR("Couldn't create double_swipe_enable\n");
 	}
 
+    prEntry_tmp = proc_symlink("double_swipe",prEntry_tp, "double_swipe_enable");
+	if(prEntry_tmp == NULL){
+		TPD_ERR("Couldn't create double_swipe Symlink\n");
+	}
+
 	prEntry_tmp = proc_create("letter_o_enable", 0666, prEntry_tp, &letter_o_enable_proc_fops);
 	if(prEntry_tmp == NULL){
 		ret = -ENOMEM;
 		TPD_ERR("Couldn't create letter_o_enable\n");
+	}
+
+    prEntry_tmp = proc_symlink("draw_circle",prEntry_tp, "letter_o_enable");
+	if(prEntry_tmp == NULL){
+		TPD_ERR("Couldn't create draw_circle Symlink\n");
 	}
 
 	prEntry_tmp = proc_create("left_arrow_enable", 0666, prEntry_tp, &left_arrow_enable_proc_fops);
@@ -2940,11 +2955,22 @@ static int init_synaptics_proc(void)
 		TPD_ERR("Couldn't create left_arrow_enable\n");
 	}
 
+    prEntry_tmp = proc_symlink("draw_left_v",prEntry_tp, "left_arrow_enable");
+	if(prEntry_tmp == NULL){
+		TPD_ERR("Couldn't create draw_left_v Symlink\n");
+	}
+
 	prEntry_tmp = proc_create("right_arrow_enable", 0666, prEntry_tp, &right_arrow_enable_proc_fops);
 	if(prEntry_tmp == NULL){
 		ret = -ENOMEM;
 		TPD_ERR("Couldn't create right_arrow_enable\n");
 	}
+
+    prEntry_tmp = proc_symlink("draw_right_v",prEntry_tp, "right_arrow_enable");
+	if(prEntry_tmp == NULL){
+		TPD_ERR("Couldn't create draw_right_v Symlink\n");
+	}
+
 
 	prEntry_tmp = proc_create("up_arrow_enable", 0666, prEntry_tp, &up_arrow_enable_proc_fops);
 	if(prEntry_tmp == NULL){
@@ -2952,11 +2978,22 @@ static int init_synaptics_proc(void)
 		TPD_ERR("Couldn't create up_arrow_enable\n");
 	}
 
+    prEntry_tmp = proc_symlink("draw_reversed_v",prEntry_tp, "up_arrow_enable");
+	if(prEntry_tmp == NULL){
+		TPD_ERR("Couldn't create draw_reversed_v Symlink\n");
+	}
+
 	prEntry_tmp = proc_create("down_arrow_enable", 0666, prEntry_tp, &down_arrow_enable_proc_fops);
 	if(prEntry_tmp == NULL){
 		ret = -ENOMEM;
 		TPD_ERR("Couldn't create down_arrow_enable\n");
-}
+    }
+
+    prEntry_tmp = proc_symlink("draw_v",prEntry_tp, "down_arrow_enable");
+	if(prEntry_tmp == NULL){
+		TPD_ERR("Couldn't create draw_v \n");
+	}
+
 #endif
 
 #ifdef SUPPORT_GLOVES_MODE
@@ -3007,6 +3044,7 @@ static int init_synaptics_proc(void)
 		printk(KERN_INFO"init_synaptics_proc: Couldn't create proc entry\n");
 	}
 	prEntry_tmp = proc_create("changer_connet", 0666, prEntry_tp, &changer_ops);
+
 	return ret;
 }
 /******************************end****************************/
