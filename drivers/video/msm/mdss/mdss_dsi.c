@@ -1801,7 +1801,7 @@ static int mdss_dsi_ctrl_probe(struct platform_device *pdev)
 	u32 index;
 	struct mdss_dsi_ctrl_pdata *ctrl_pdata = NULL;
 	struct device_node *dsi_pan_node = NULL;
-	char panel_cfg[MDSS_MAX_PANEL_LEN + 1];
+	char panel_cfg[MDSS_MAX_PANEL_LEN];
 	const char *ctrl_name;
 	bool cmd_cfg_cont_splash = true;
 	struct mdss_panel_cfg *pan_cfg = NULL;
