@@ -29,12 +29,6 @@
 #include <linux/of.h>
 #include <trace/events/power.h>
 
-// Default startup frequencies
-#define CONFIG_CPU_FREQ_MIN_CLUSTER1	302400
-#define CONFIG_CPU_FREQ_MAX_CLUSTER1	1555200
-#define CONFIG_CPU_FREQ_MIN_CLUSTER2	302400
-#define CONFIG_CPU_FREQ_MAX_CLUSTER2	1766400
-
 static DEFINE_MUTEX(l2bw_lock);
 
 static struct clk *cpu_clk[NR_CPUS];
@@ -151,35 +145,10 @@ static int msm_cpufreq_init(struct cpufreq_policy *policy)
 		if (cpu_clk[cpu] == cpu_clk[policy->cpu])
 			cpumask_set_cpu(cpu, policy->cpus);
 
-	if (cpufreq_frequency_table_cpuinfo(policy, table))
-	{
-		// Set custom frequency at startup
-		if (policy->cpu <= 1)
-		{
-		   policy->cpuinfo.min_freq = CONFIG_CPU_FREQ_MIN_CLUSTER1;
-		   policy->cpuinfo.max_freq = CONFIG_CPU_FREQ_MAX_CLUSTER1;
-		}
-
-		if (policy->cpu >= 2)
-		{
-		   policy->cpuinfo.min_freq = CONFIG_CPU_FREQ_MIN_CLUSTER2;
-		   policy->cpuinfo.max_freq = CONFIG_CPU_FREQ_MAX_CLUSTER2;
-		}
-
+	ret = cpufreq_table_validate_and_show(policy, table);
+	if (ret) {
 		pr_err("cpufreq: failed to get policy min/max\n");
-	}
-
-	// Set custom frequency at startup
-	if (policy->cpu <= 1)
-	{
-       policy->min = CONFIG_CPU_FREQ_MIN_CLUSTER1;
-       policy->max = CONFIG_CPU_FREQ_MAX_CLUSTER1;
-	}
-
-	if (policy->cpu >= 2)
-	{
-       policy->min = CONFIG_CPU_FREQ_MIN_CLUSTER2;
-       policy->max = CONFIG_CPU_FREQ_MAX_CLUSTER2;
+		return ret;
 	}
 
 	cur_freq = clk_get_rate(cpu_clk[policy->cpu])/1000;
