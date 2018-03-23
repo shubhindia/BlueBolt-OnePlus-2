@@ -49,9 +49,9 @@ on property:persist.spectrum.profile=2
    write /sys/class/kgsl/kgsl-3d0/devfreq/adrenoboost 0
    write /sys/class/kgsl/kgsl-3d0/max_pwrlevel 3
    write /sys/class/kgsl/kgsl-3d0/default_pwrlevel 8
-   write /sys/module/adreno_idler/parameters/adreno_idler_downdifferential 25
-   write /sys/module/adreno_idler/parameters/adreno_idler_idlewait 10
-   write /sys/module/adreno_idler/parameters/adreno_idler_idleworkload 8000
+   write /sys/module/adreno_idler/parameters/adreno_idler_downdifferential 20
+   write /sys/module/adreno_idler/parameters/adreno_idler_idlewait 15
+   write /sys/module/adreno_idler/parameters/adreno_idler_idleworkload 5000
    
 
 
@@ -67,7 +67,7 @@ on property:persist.spectrum.profile=0
    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/ignore_hispeed_on_notif 1
    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/max_freq_hysteresis 80000
    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/timer_slack 30000
-   write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 384000
+   write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 302400
    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 1478000
    write /sys/devices/system/cpu/cpu4/online 1
    write /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor interactive
@@ -99,8 +99,8 @@ on property:persist.spectrum.profile=0
    write /sys/class/kgsl/kgsl-3d0/default_pwrlevel 7
    write /sys/module/adreno_idler/parameters/adreno_idler_active 1
    write /sys/module/adreno_idler/parameters/adreno_idler_downdifferential 20
-   write /sys/module/adreno_idler/parameters/adreno_idler_idlewait 20 
-   write /sys/module/adreno_idler/parameters/adreno_idler_idleworkload 6000
+   write /sys/module/adreno_idler/parameters/adreno_idler_idlewait 15 
+   write /sys/module/adreno_idler/parameters/adreno_idler_idleworkload 3000
 
    
 # Performance 
