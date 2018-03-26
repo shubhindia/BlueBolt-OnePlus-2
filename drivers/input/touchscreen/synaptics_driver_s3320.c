@@ -2916,7 +2916,7 @@ static int init_synaptics_proc(void)
 		TPD_ERR("Couldn't create double_tap_enable\n");
 	}
 
-    prEntry_tmp = proc_symlink("double_tap",prEntry_tp, "double_tap_enable");
+    prEntry_tmp = proc_create("double_tap",0666,prEntry_tp, &double_tap_enable_proc_fops);
 	if(prEntry_tmp == NULL){
 		TPD_ERR("Couldn't create double_tap Symlink\n");
 	}
@@ -2933,7 +2933,7 @@ static int init_synaptics_proc(void)
 		TPD_ERR("Couldn't create double_swipe_enable\n");
 	}
 
-    prEntry_tmp = proc_symlink("double_swipe",prEntry_tp, "double_swipe_enable");
+    prEntry_tmp = proc_create("double_swipe",0666, prEntry_tp, &double_swipe_enable_proc_fops);
 	if(prEntry_tmp == NULL){
 		TPD_ERR("Couldn't create double_swipe Symlink\n");
 	}
@@ -2944,7 +2944,7 @@ static int init_synaptics_proc(void)
 		TPD_ERR("Couldn't create letter_o_enable\n");
 	}
 
-    prEntry_tmp = proc_symlink("draw_circle",prEntry_tp, "letter_o_enable");
+    prEntry_tmp = proc_create("draw_circle",0666, prEntry_tp, &letter_o_enable_proc_fops);
 	if(prEntry_tmp == NULL){
 		TPD_ERR("Couldn't create draw_circle Symlink\n");
 	}
@@ -2955,7 +2955,7 @@ static int init_synaptics_proc(void)
 		TPD_ERR("Couldn't create left_arrow_enable\n");
 	}
 
-    prEntry_tmp = proc_symlink("draw_left_v",prEntry_tp, "left_arrow_enable");
+    prEntry_tmp = proc_create("draw_left_v", 0666, prEntry_tp, &left_arrow_enable_proc_fops);
 	if(prEntry_tmp == NULL){
 		TPD_ERR("Couldn't create draw_left_v Symlink\n");
 	}
@@ -2966,11 +2966,10 @@ static int init_synaptics_proc(void)
 		TPD_ERR("Couldn't create right_arrow_enable\n");
 	}
 
-    prEntry_tmp = proc_symlink("draw_right_v",prEntry_tp, "right_arrow_enable");
+    prEntry_tmp = proc_create("draw_right_v",0666, prEntry_tp, &right_arrow_enable_proc_fops);
 	if(prEntry_tmp == NULL){
 		TPD_ERR("Couldn't create draw_right_v Symlink\n");
 	}
-
 
 	prEntry_tmp = proc_create("up_arrow_enable", 0666, prEntry_tp, &up_arrow_enable_proc_fops);
 	if(prEntry_tmp == NULL){
@@ -2978,7 +2977,7 @@ static int init_synaptics_proc(void)
 		TPD_ERR("Couldn't create up_arrow_enable\n");
 	}
 
-    prEntry_tmp = proc_symlink("draw_reversed_v",prEntry_tp, "up_arrow_enable");
+    prEntry_tmp = proc_create("draw_reversed_v",0666, prEntry_tp, &up_arrow_enable_proc_fops);
 	if(prEntry_tmp == NULL){
 		TPD_ERR("Couldn't create draw_reversed_v Symlink\n");
 	}
@@ -2989,7 +2988,7 @@ static int init_synaptics_proc(void)
 		TPD_ERR("Couldn't create down_arrow_enable\n");
     }
 
-    prEntry_tmp = proc_symlink("draw_v",prEntry_tp, "down_arrow_enable");
+    prEntry_tmp = proc_create("draw_v",0666, prEntry_tp, &down_arrow_enable_proc_fops);
 	if(prEntry_tmp == NULL){
 		TPD_ERR("Couldn't create draw_v \n");
 	}
