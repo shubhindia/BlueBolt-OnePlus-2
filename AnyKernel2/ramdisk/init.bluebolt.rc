@@ -97,11 +97,7 @@ on property:sys.bootcomplete=1
     write /sys/block/mmcblk0/queue/rotational 0
     
     # Set Swappiness
-    write /proc/sys/vm/swappiness 8
-    
-    
-    write /sys/devices/system/cpu/cpu0/core_ctl/always_online_cpu "1 1 1 1"
-    write /sys/devices/system/cpu/cpu4/core_ctl/always_online_cpu "1 0 0 0"
+    write /proc/sys/vm/swappiness 20
     chown system:system /sys/devices/system/cpu/cpu4/core_ctl/min_cpus
     chown system:system /sys/devices/system/cpu/cpu4/core_ctl/max_cpus
     
