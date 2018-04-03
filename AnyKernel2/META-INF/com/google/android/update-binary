@@ -58,8 +58,8 @@ ui_print "     |____/|_|\__,_|\___|____/ \___/|_|\__|       ";
 ui_print "                                                  ";
 ui_print "                                                  ";
 ui_print "--------------------------------------------------";
-ui_print "BlueBolt Kernel for ANDROID OREO 8.1 and 8.0 ";
-ui_print "RC 3.4";
+ui_print "BlueBolt Kernel for ANDROID OREO 8.1 ";
+ui_print "RC 3.5";
 ui_print "By - Shreyansh Lodha";
 
 if [ "$(file_getprop /tmp/anykernel/anykernel.sh do.devicecheck)" == 1 ]; then
