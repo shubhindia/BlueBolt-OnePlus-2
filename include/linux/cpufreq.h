@@ -34,6 +34,7 @@
 #define CPUFREQ_NAME_PLEN		(CPUFREQ_NAME_LEN + 1)
 
 struct cpufreq_governor;
+struct pid_namespace;
 
 struct cpufreq_freqs {
 	unsigned int cpu;	/* cpu nr */
