@@ -40,14 +40,15 @@ mount -o rw /system;
 mount /data;
 
 cp -f /tmp/anykernel/tools/getprop /sbin/;
-cp -f /tmp/anykernel/tools/thermal-engine.conf /system/etc/;
 cp -f /tmp/anykernel/tools/busybox /system/xbin/;
+cp -f /tmp/anykernel/tools/busybox /system/bin/;
+cp -f /tmp/anykernel/tools/busybox /sbin/;
 rm -f /system/etc/init.d/UKM;
 rm -f /system/lib/modules/msm_core_ctl.ko;
 rm -f /system/lib/modules/hcube.ko;
 ui_print " ";
 
-ui_print "               Oneplus-2 Kernel                   ";
+ui_print "               OnePlus-2 Kernel                   ";
 ui_print "--------------------------------------------------";
 ui_print "                                                  ";
 ui_print "      ____  _            ____        _ _          ";
