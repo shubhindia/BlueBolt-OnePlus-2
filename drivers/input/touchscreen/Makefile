@@ -4,6 +4,22 @@
 
 # Each configuration option enables a list of files.
 
+ccflags-y ?=
+ccflags-y += -O3 \
+    -fexpensive-optimizations \
+    -fno-defer-pop \
+    -ffp-contract=fast \
+    -fgcse-sm \
+    -fgcse-las \
+    -fgcse-after-reload \
+    -fno-signed-zeros \
+    -fno-trapping-math \
+    -fno-associative-math \
+    -fno-reciprocal-math \
+    -ffinite-math-only \
+    -mtune=cortex-a57.cortex-a53 \
+-mcpu=cortex-a57.cortex-a53
+
 wm97xx-ts-y := wm97xx-core.o
 
 obj-$(CONFIG_TOUCHSCREEN_88PM860X)	+= 88pm860x-ts.o
