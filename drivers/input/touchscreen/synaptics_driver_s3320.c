@@ -567,9 +567,9 @@ static int tpd_hw_pwron(struct synaptics_ts_data *ts)
 	}
 	if( ts->reset_gpio > 0 ) {
 		gpio_direction_output(ts->reset_gpio, 1);
-        msleep(10);
+        	usleep_range(10 * 1000, 10 * 1000);
 		gpio_direction_output(ts->reset_gpio, 0);
-        msleep(5);
+        	usleep_range(10 * 1000, 10 * 1000);
 		gpio_direction_output(ts->reset_gpio, 1);
 		TPD_DEBUG("synaptics:enable the reset_gpio\n");
 	}
@@ -595,7 +595,6 @@ static int tpd_hw_pwroff(struct synaptics_ts_data *ts)
 		TPD_DEBUG("synaptics:disable the v1p8_gpio\n");
 		gpio_direction_output(ts->v1p8_gpio, 0);
 	}
-	msleep(200);
 	if (!IS_ERR(ts->vdd_2v8)) {
 		rc = regulator_disable(ts->vdd_2v8);
 		if (rc) {
@@ -922,17 +921,6 @@ static int synaptics_enable_interrupt(struct synaptics_ts_data *ts, int enable)
 	return 0;	
 }
 
-static void delay_qt_ms(unsigned long  w_ms)
-{
-	unsigned long i;
-	unsigned long j;
-	for(i = 0; i < w_ms; i++) {
-		for (j = 0; j < 1000; j++) {
-			udelay(1);
-		}
-	}
-}
-
 static void int_state(struct synaptics_ts_data *ts)
 {
 	int ret = -1;
@@ -941,7 +929,7 @@ static void int_state(struct synaptics_ts_data *ts)
 		TPD_ERR("int_state:cannot reset touch panel \n");
 		return;
 	}
-	delay_qt_ms(170);
+	msleep(170);
 #ifdef SUPPORT_GLOVES_MODE
 	synaptics_glove_mode_enable(ts);
 #endif
@@ -2043,7 +2031,7 @@ static void checkCMD(void)
 	int flag_err = 0;
 	struct synaptics_ts_data *ts = ts_g;
 	do {
-		delay_qt_ms(30); //wait 10ms
+		msleep(30); //wait 10ms
 		ret = synaptics_rmi4_i2c_read_byte(ts->client, F54_ANALOG_COMMAND_BASE);
 		flag_err++;
 	}while( (ret > 0x00) && (flag_err < 30) );
@@ -2117,7 +2105,7 @@ static ssize_t tp_baseline_show(struct device_driver *ddri, char *buf)
 	}
 	TPDTM_DMESG("\nread all is oK\n");
 	ret = i2c_smbus_write_byte_data(ts->client, F54_ANALOG_COMMAND_BASE, 0X02);
-	delay_qt_ms(60);
+	msleep(60);
 
 #ifdef SUPPORT_GLOVES_MODE
 	synaptics_glove_mode_enable(ts);
@@ -2167,7 +2155,7 @@ static ssize_t tp_rawdata_show(struct device_driver *ddri, char *buf)
 		}
 	}
 	ret = i2c_smbus_write_byte_data(ts->client,F54_ANALOG_COMMAND_BASE,0X02);
-	delay_qt_ms(60);
+	msleep(60);
 	synaptics_enable_interrupt(ts, 1);
 	mutex_unlock(&ts->mutex);
 	touch_enable(ts);
@@ -2385,7 +2373,7 @@ END:
 	num_read_chars += sprintf(&(buf[num_read_chars]), "imageid=0x%x,deviceid=0x%x\n", TP_FW, TP_FW);
 	num_read_chars += sprintf(&(buf[num_read_chars]), "%d error(s). %s\n", error_count, error_count?"":"All test passed.");
 	ret = i2c_smbus_write_byte_data(ts->client, F54_ANALOG_COMMAND_BASE, 0X02);
-	delay_qt_ms(60);
+	msleep(60);
 	ret = i2c_smbus_write_byte_data(ts->client, 0xff, 0x00);
 	ret = i2c_smbus_write_byte_data(ts->client, F01_RMI_CMD00, 0x01);
 	msleep(150);
@@ -2470,7 +2458,7 @@ static ssize_t tp_baseline_show_with_cbc(struct device_driver *ddri, char *buf)
 	}
 
 	ret = synaptics_rmi4_i2c_write_byte(ts->client,F54_ANALOG_COMMAND_BASE,0X02);
-	delay_qt_ms(60);
+	msleep(60);
 	synaptics_enable_interrupt(ts,1);
 	mutex_unlock(&ts->mutex);
 	touch_enable(ts);
@@ -3714,7 +3702,7 @@ static int synaptics_ts_probe(struct i2c_client *client, const struct i2c_device
 			TPD_DEVICE, ts);
 	if(ret < 0)
 		TPD_ERR("%s request_threaded_irq ret is %d\n",__func__,ret);
-    msleep(5);
+    	msleep(5);
 	ret = synaptics_enable_interrupt(ts, 1);
 	if(ret < 0)
 		TPD_ERR("%s enable interrupt error ret=%d\n",__func__,ret);
