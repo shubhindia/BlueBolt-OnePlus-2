@@ -166,21 +166,21 @@ struct test_header {
 #define BIT6 (0x1 << 6)
 #define BIT7 (0x1 << 7)
 
-int LeftVee_gesture = 1; //">"
-int RightVee_gesture = 1; //"<"
-int DouSwip_gesture = 1; // "||"
-int Circle_gesture = 1; // "O"
-int UpVee_gesture = 1; //"V"
-int DownVee_gesture = 1; //"^"
-int DouTap_gesture = 1; //"double tap"
+static int LeftVee_gesture = 1; //">"
+static int RightVee_gesture = 1; //"<"
+static int DouSwip_gesture = 1; // "||"
+static int Circle_gesture = 1; // "O"
+static int UpVee_gesture = 1; //"V"
+static int DownVee_gesture = 1; //"^"
+static int DouTap_gesture = 1; //"double tap"
 
-int Left2RightSwip_gesture = 0; //"(-->)"
-int Right2LeftSwip_gesture = 0; //"(<--)"
-int Up2DownSwip_gesture = 0; //"up to down |"
-int Down2UpSwip_gesture = 0; //"down to up |"
+static int Left2RightSwip_gesture = 0; //"(-->)"
+static int Right2LeftSwip_gesture = 0; //"(<--)"
+static int Up2DownSwip_gesture = 0; //"up to down |"
+static int Down2UpSwip_gesture = 0; //"down to up |"
 
-int Wgestrue_gesture = 0; //"(W)"
-int Mgestrue_gesture = 0; //"(M)"
+static int Wgestrue_gesture = 0; //"(W)"
+static int Mgestrue_gesture = 0; //"(M)"
 
 #endif
 //ruanbanmao@BSP add for tp gesture 2015-05-06, end
