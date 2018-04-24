@@ -407,10 +407,9 @@ static int oem_synaptics_ts_probe(struct i2c_client *client, const struct i2c_de
 	//spinlock_t oem_lock;
 	optimize_data.client = client;
 	optimize_data.dev_id = id;
-	optimize_data.workqueue = alloc_workqueue("tpd_probe_optimize", WQ_HIGHPRI |
-			WQ_MEM_RECLAIM, 1);
+	optimize_data.workqueue = alloc_workqueue("tpd_probe_optimize", WQ_HIGHPRI, 1);
 	INIT_DELAYED_WORK(&(optimize_data.work), synaptics_ts_probe_func);
-	queue_delayed_work(optimize_data.workqueue,&(optimize_data.work),msecs_to_jiffies(300));
+	queue_delayed_work(0, optimize_data.workqueue,&(optimize_data.work), msecs_to_jiffies(300));
 	//flush_workqueue(optimize_data.workqueue);
 	//spin_unlock_irqrestore(&oem_lock, flags);
 	return probe_ret;
