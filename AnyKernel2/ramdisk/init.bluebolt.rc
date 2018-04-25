@@ -111,6 +111,16 @@ on property:sys.bootcomplete=1
     write /sys/devices/system/cpu/cpu0/sched_mostly_idle_load 25
     write /sys/devices/system/cpu/cpu0/sched_mostly_idle_nr_run 6
     
+    # LMK params
+    write /sys/module/lowmemorykiller/parameters/minfree "18432,23040,27648,32256,36864,46080"
+    
+    # Little cluster
+    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/target_loads "85 600000:45 672000:50 768000:55 864000:60 960000:70 1248000:85 1478400:95"
+    
+    # big cluster
+    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/hispeed_freq 864000
+    
+    
     exec u:r:su:s0 root root -- /init.supolicy.sh
     exec u:r:supersu:s0 root root -- /init.supolicy.sh
 
