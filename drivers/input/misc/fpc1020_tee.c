@@ -60,10 +60,10 @@
 #include <linux/boeffla_touchkey_control.h>
 #endif
 
-#define FPC1020_RESET_LOW_US 500
-#define FPC1020_RESET_HIGH1_US 50
-#define FPC1020_RESET_HIGH2_US 600
-#define FPC_TTW_HOLD_TIME 500
+#define FPC1020_RESET_LOW_US 600
+#define FPC1020_RESET_HIGH1_US 100
+#define FPC1020_RESET_HIGH2_US 700
+#define FPC_TTW_HOLD_TIME 600
 
 /* Unused key value to avoid interfering with active keys */
 #define KEY_FINGERPRINT 0x2ee
