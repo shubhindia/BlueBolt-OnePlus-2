@@ -219,6 +219,7 @@ static int sleep_enable;
 #endif
 
 static struct synaptics_ts_data *ts_g = NULL;
+static struct workqueue_struct *synaptics_wq = NULL;
 static struct workqueue_struct *synaptics_report = NULL;
 static struct proc_dir_entry *prEntry_tp = NULL;
 
@@ -3655,6 +3656,12 @@ static int synaptics_ts_probe(struct i2c_client *client, const struct i2c_device
 		TPD_ERR("synaptics_input_init failed!\n");
 	}
 	
+	synaptics_wq = alloc_ordered_workqueue("synaptics_wq", WQ_HIGHPRI);
+	if( !synaptics_wq ){
+		ret = -ENOMEM;
+		goto exit_createworkqueue_failed;
+	}
+	
 	INIT_WORK(&ts->pm_work, synaptics_suspend_resume);
 	
 #if defined(CONFIG_FB)
@@ -3748,6 +3755,8 @@ static int synaptics_ts_probe(struct i2c_client *client, const struct i2c_device
 exit_init_failed:
 	free_irq(client->irq,ts);
 exit_createworkqueue_failed:
+	destroy_workqueue(synaptics_wq);
+	synaptics_wq = NULL;
 	destroy_workqueue(synaptics_report);
 	synaptics_report = NULL;
 
@@ -3955,7 +3964,7 @@ static int fb_notifier_callback(struct notifier_block *self, unsigned long event
 		case FB_BLANK_HSYNC_SUSPEND:
 		case FB_BLANK_NORMAL:
 			if (ts->is_suspended)
-				queue_work(system_highpri_wq, &ts->pm_work);
+				queue_work(synaptics_wq, &ts->pm_work);
 			break;
 		case FB_BLANK_POWERDOWN:
 			atomic_set(&ts->is_stop, 1);
@@ -3965,7 +3974,7 @@ static int fb_notifier_callback(struct notifier_block *self, unsigned long event
 		switch (*blank) {
 		case FB_BLANK_POWERDOWN:
 			if (!ts->is_suspended)
-				queue_work(system_highpri_wq, &ts->pm_work);
+				queue_work(synaptics_wq, &ts->pm_work);
 			break;
 		}
 	}
@@ -3988,6 +3997,10 @@ static int __init tpd_driver_init(void)
 static void __exit tpd_driver_exit(void)
 {
 	i2c_del_driver(&tpd_i2c_driver);
+	if(synaptics_wq ){
+		destroy_workqueue(synaptics_wq);
+		synaptics_wq = NULL;
+	}
 	return;
 }
 
