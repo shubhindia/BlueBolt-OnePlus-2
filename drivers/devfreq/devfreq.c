@@ -44,7 +44,7 @@ static LIST_HEAD(devfreq_governor_list);
 static LIST_HEAD(devfreq_list);
 static DEFINE_MUTEX(devfreq_list_lock);
 
-#define WAKE_BOOST_DURATION_MS (5000)
+#define WAKE_BOOST_DURATION_MS (3000)
 
 /* List of devices to boost when the screen is woken */
 static const char *boost_devices[] = {
